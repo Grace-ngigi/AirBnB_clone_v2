@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-"""This module defines a base class for all models in our hbnb clone"""
+"""base class for all models in our hbnb clone"""
 import uuid
 from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
@@ -30,11 +30,11 @@ class BaseModel:
             self.created_at = datetime.now()
             self.updated_at = datetime.now()
         else:
-            for i in kwargs:
-                if i in ['created_at', 'updated_at']:
-                    setattr(self, i, datetime.fromisoformat(kwargs[i]))
-                elif i != '__class__':
-                    setattr(self, i, kwargs[i])
+            for k in kwargs:
+                if k in ['created_at', 'updated_at']:
+                    setattr(self, k, datetime.fromisoformat(kwargs[k]))
+                elif k != '__class__':
+                    setattr(self, k, kwargs[k])
             if storage_type == 'db':
                 if not hasattr(kwargs, 'id'):
                     setattr(self, 'id', str(uuid.uuid4()))
@@ -59,9 +59,9 @@ class BaseModel:
         """Convert instance into dict format"""
         dct = self.__dict__.copy()
         dct['__class__'] = self.__class__.__name__
-        for i in dct:
-            if type(dct[i]) is datetime:
-                dct[i] = dct[i].isoformat()
+        for k in dct:
+            if type(dct[k]) is datetime:
+                dct[k] = dct[k].isoformat()
         if '_sa_instance_state' in dct.keys():
             del(dct['_sa_instance_state'])
         return dct
