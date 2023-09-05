@@ -1,4 +1,4 @@
-#!/usr/bin/python3
+#!/usr/bin/python
 """ Console Module """
 import cmd
 import sys
@@ -118,63 +118,61 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-        """ Create an object of any class"""
-        attrs = ('id', 'created_at', 'updated_at', '__class__')
-        pattern = r'(?P<name>(?:[a-zA-Z]|_)(?:[a-zA-Z]|\d|_)*)'
-        className = ''
-        classMatch = re.match(pattern, args)
-        objs ={}
-        if classMatch is not None:
-            className = classMatch.group('name')
-            strParams = args[len(className):].strip()
-            params = strParams.split(' ')
-            strPattern = r'(?P<t_str>"([^"]|\")*")'
-            floatPattern = r'(?P<t_float>[-+]?\d+\.\d+)'
-            intPattern = r'(?P<t_int>[-+]?\d+)'
-            paramPattern = '{}=({}|{}|{})'.format(
-                pattern,
-                strPattern,
-                floatPattern,
-                intPattern
-            )
-            for param in params:
-                paramMatch = re.fullmatch(paramPattern, param)
-                if paramMatch is not None:
-                    keyName = paramMatch.group('name')
-                    str_v = paramMatch.group('t_str')
-                    float_v = paramMatch.group('t_float')
-                    int_v = paramMatch.group('t_int')
-                    if float_v is not None:
-                        objs[keyName] = float(float_v)
-                    if int_v is not None:
-                        objs[keyName] = int(int_v)
-                    if str_v is not None:
-                        objs[keyName] = str_v[1:-1].replace('_', ' ')
-        else:
-            className = args
+        """ Create an object of any class with the specified parameters"""
+    
+        # Split the input arguments by whitespace to extract the class name and parameters
+        args = args.split()
+
+        # Check if the command includes the class name
         if not args:
             print("** class name missing **")
             return
-        elif args not in HBNBCommand.classes:
+
+        class_name = args[0]
+    
+        # Check if the provided class name exists in the available classes
+        if class_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        if os.getenv('HBNB_TYPE_STORAGE') == 'db':
-            if not hasattr(objs, 'id'):
-                objs['id'] = str(uuid.uuid4())
-            if not hasattr(objs, 'created_at'):
-                objs['created_at'] = str(datetime.now())
-            if not hasattr(objs, 'updated_at'):
-                objs['updated_at'] = str(datetime.now())
-            new_instance = HBNBCommand.classes[className](**objs)
-            new_instance.save()
-            print(new_instance.id)
-        else:
-            new_instance = HBNBCommand.classes[className]()
-            for key, value in objs.items():
-                if key not in attrs:
-                    setattr(new_instance, key, value)
-            new_instance.save()
-            print(new_instance.id)
+    
+        # Initialize an empty dictionary to store the parameters
+        params = {}
+
+        # Iterate through the remaining arguments (parameters)
+        for param_arg in args[1:]:
+            # Split each parameter argument by '=' to separate key and value
+            param_parts = param_arg.split('=')
+
+            # Check if the parameter argument has the correct format (key=value)
+            if len(param_parts) != 2:
+                print(f"Skipping invalid parameter: {param_arg}")
+                continue
+
+            key, value = param_parts
+
+            # Remove any double quotes and replace underscores with spaces in the value
+            if value.startswith('"') and value.endswith('"'):
+                value = value[1:-1].replace('\\"', '"').replace('_', ' ')
+
+            # Attempt to convert the value to a float or int if applicable
+            try:
+                if '.' in value:
+                    value = float(value)
+                else:
+                    value = int(value)
+            except ValueError:
+                pass  # If it's not a valid float or int, keep it as a string
+
+            # Add the key-value pair to the params dictionary
+            params[key] = value
+
+        # Create a new instance of the specified class with the parameters
+        new_instance = HBNBCommand.classes[class_name](**params)
+
+        # Save the new instance (assuming file storage)
+        new_instance.save()
+
+        print(new_instance.id)
 
     def help_create(self):
         """ Help information for the create method """
