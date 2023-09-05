@@ -1,7 +1,11 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """ Console Module """
 import cmd
 import sys
+import re
+import os
+from datetime import datetime
+import uuid
 from models.base_model import BaseModel
 from models.__init__ import storage
 from models.user import User
@@ -115,16 +119,62 @@ class HBNBCommand(cmd.Cmd):
 
     def do_create(self, args):
         """ Create an object of any class"""
+        attrs = ('id', 'created_at', 'updated_at', '__class__')
+        pattern = r'(?P<name>(?:[a-zA-Z]|_)(?:[a-zA-Z]|\d|_)*)'
+        className = ''
+        classMatch = re.match(pattern, args)
+        objs ={}
+        if classMatch is not None:
+            className = classMatch.group('name')
+            strParams = args[len(className):].strip()
+            params = strParams.split(' ')
+            strPattern = r'(?P<t_str>"([^"]|\")*")'
+            floatPattern = r'(?P<t_float>[-+]?\d+\.\d+)'
+            intPattern = r'(?P<t_int>[-+]?\d+)'
+            paramPattern = '{}=({}|{}|{})'.format(
+                pattern,
+                strPattern,
+                floatPattern,
+                intPattern
+            )
+            for param in params:
+                paramMatch = re.fullmatch(paramPattern, param)
+                if paramMatch is not None:
+                    keyName = paramMatch.group('name')
+                    str_v = paramMatch.group('t_str')
+                    float_v = paramMatch.group('t_float')
+                    int_v = paramMatch.group('t_int')
+                    if float_v is not None:
+                        objs[keyName] = float(float_v)
+                    if int_v is not None:
+                        objs[keyName] = int(int_v)
+                    if str_v is not None:
+                        objs[keyName] = str_v[1:-1].replace('_', ' ')
+        else:
+            className = args
         if not args:
             print("** class name missing **")
             return
         elif args not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-        new_instance = HBNBCommand.classes[args]()
-        storage.save()
-        print(new_instance.id)
-        storage.save()
+        if os.getenv('HBNB_TYPE_STORAGE') == 'db':
+            if not hasattr(objs, 'id'):
+                objs['id'] = str(uuid.uuid4())
+            if not hasattr(objs, 'created_at'):
+                objs['created_at'] = str(datetime.now())
+            if not hasattr(objs, 'updated_at'):
+                objs['updated_at'] = str(datetime.now())
+            new_instance = HBNBCommand.classes[className](**objs)
+            new_instance.save()
+            print(new_instance.id)
+        else:
+            new_instance = HBNBCommand.classes[className]()
+            for key, value in objs.items():
+                if key not in attrs:
+                    setattr(new_instance, key, value)
+            new_instance.save()
+            print(new_instance.id)
 
     def help_create(self):
         """ Help information for the create method """
