@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 """ Console Module """
 import cmd
 import sys
@@ -118,60 +118,48 @@ class HBNBCommand(cmd.Cmd):
         pass
 
     def do_create(self, args):
-        """ Create an object of any class with the specified parameters"""
-    
-        # Split the input arguments by whitespace to extract the class name and parameters
-        args = args.split()
-
-        # Check if the command includes the class name
+        """Create an object of any class with parameters"""
         if not args:
             print("** class name missing **")
             return
 
-        class_name = args[0]
-    
-        # Check if the provided class name exists in the available classes
+        arg_list = args.split()
+        class_name = arg_list[0]
+
         if class_name not in HBNBCommand.classes:
             print("** class doesn't exist **")
             return
-    
-        # Initialize an empty dictionary to store the parameters
+
+        if len(arg_list) < 2:
+            print("** missing parameters **")
+            return
+
+        arg_str = ' '.join(arg_list[1:])
         params = {}
+        param_pairs = arg_str.split()
 
-        # Iterate through the remaining arguments (parameters)
-        for param_arg in args[1:]:
-            # Split each parameter argument by '=' to separate key and value
-            param_parts = param_arg.split('=')
-
-            # Check if the parameter argument has the correct format (key=value)
-            if len(param_parts) != 2:
-                print(f"Skipping invalid parameter: {param_arg}")
-                continue
-
-            key, value = param_parts
-
-            # Remove any double quotes and replace underscores with spaces in the value
-            if value.startswith('"') and value.endswith('"'):
-                value = value[1:-1].replace('\\"', '"').replace('_', ' ')
-
-            # Attempt to convert the value to a float or int if applicable
-            try:
-                if '.' in value:
-                    value = float(value)
+        for param_pair in param_pairs:
+            param_parts = param_pair.split('=')
+            if len(param_parts) == 2:
+                key = param_parts[0]
+                value = param_parts[1]
+                if value.startswith('"') and value.endswith('"'):
+                    value = value[1:-1].replace('_', ' ').replace('\\"', '"')
+                elif '.' in value:
+                    try:
+                        value = float(value)
+                    except ValueError:
+                        pass
                 else:
-                    value = int(value)
-            except ValueError:
-                pass  # If it's not a valid float or int, keep it as a string
+                    try:
+                        value = int(value)
+                    except ValueError:
+                        pass
 
-            # Add the key-value pair to the params dictionary
-            params[key] = value
+                params[key] = value
 
-        # Create a new instance of the specified class with the parameters
         new_instance = HBNBCommand.classes[class_name](**params)
-
-        # Save the new instance (assuming file storage)
-        new_instance.save()
-
+        storage.save()
         print(new_instance.id)
 
     def help_create(self):
