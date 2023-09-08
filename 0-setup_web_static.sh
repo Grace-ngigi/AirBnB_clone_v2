@@ -9,7 +9,7 @@ fi
 
 # Create the directories and give ownership
 sudo mkdir -p /data/web_static/releases/test/
-sudo mkdir -p /data/wen_tatic/shared
+sudo mkdir -p /data/web_static/shared
 sudo touch /data/web_static/releases/test/index.html
 sudo chown -R ubuntu:ubuntu /data/
 
