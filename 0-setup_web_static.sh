@@ -10,8 +10,6 @@ fi
 # Create the directories and give ownership
 sudo mkdir -p /data/web_static/releases/test/
 sudo mkdir -p /data/web_static/shared
-sudo touch /data/web_static/releases/test/index.html
-sudo chown -R ubuntu:ubuntu /data/
 
 # Create a fake HTML file
 echo "<!DOCTYPE html>
@@ -21,11 +19,14 @@ echo "<!DOCTYPE html>
 <head>
 <body>
 <h1>Deploying to two servers.</h1>
-</body>" | sudo tee /data/web_static/releases/test/index.html > /dev/null
+</body>" | sudo tee /data/web_static/releases/test/index.html
 
 # Create or recreate the symbolic link
 sudo rm -f /data/web_static/current
 sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
+
+# change ownership
+sudo chown -R ubuntu:ubuntu /data/
 
 # Update Nginx configuration
 nginx_config="/etc/nginx/sites-available/default"
