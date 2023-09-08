@@ -36,7 +36,7 @@ echo "server {
     location /hbnb_static {
         alias /data/web_static/current/;
     } 
-}" | sudo tee "$nginx_config"
+}" | sudo tee /etc/nginx/sites-available/default
 # Restart Nginx
 sudo service nginx restart
 # exit
