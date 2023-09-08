@@ -38,3 +38,5 @@ echo "server {
 }" | sudo tee "$nginx_config"
 # Restart Nginx
 sudo service nginx restart
+# exit
+exit
