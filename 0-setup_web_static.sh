@@ -30,7 +30,7 @@ sudo ln -sf /data/web_static/releases/test/ /data/web_static/current
 # Update Nginx configuration
 nginx_config="/etc/nginx/sites-available/default"
 echo "server {
-    listen 80 defult_server;
+    listen 80 default_server;
     server_name _;
     location /hbnb_static {
         alias /data/web_static/current/;
