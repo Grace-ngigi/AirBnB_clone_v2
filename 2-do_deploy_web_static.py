@@ -30,6 +30,8 @@ def do_deploy(archive_path):
         # Uncompress the archive to the release folder
         run('tar -xzf /tmp/{} -C {}'.format(archive_filename, release_folder))
 
+        # Move or rename
+        run("mv {}web_static/* {}".format(release_folder, release_folder))
         # Delete the archive from the web server
         run('rm /tmp/{}'.format(archive_filename))
 
