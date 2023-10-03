@@ -12,36 +12,20 @@ def do_deploy(archive_path):
     """
     Distribute an archive to web servers and deploy it.
     """
-    if not os.path.exists(archive_path):
+    if exists(archive_path) is False:
         return False
-
     try:
-        # Upload the archive to /tmp/ directory on the web server
+        file_n = archive_path.split("/")[-1]
+        no_ext = file_n.split(".")[0]
+        path = "/data/web_static/releases/"
         put(archive_path, '/tmp/')
-
-        # Get the archive filename without extension
-        archive_filename = os.path.basename(archive_path)
-        archive_name_noext = os.path.splitext(archive_filename)[0]
-
-        # Create the directory structure for deployment
-        release_folder = '/data/web_static/releases/' + archive_name_noext
-        run('mkdir -p {}'.format(release_folder))
-
-        # Uncompress the archive to the release folder
-        run('tar -xzf /tmp/{} -C {}'.format(archive_filename, release_folder))
-
-        # Move or rename
-        run("mv {}web_static/* {}".format(release_folder, release_folder))
-        # Delete the archive from the web server
-        run('rm /tmp/{}'.format(archive_filename))
-
-        # Create a new symbolic link
-        current_link = '/data/web_static/current'
-        run('rm -f {}'.format(current_link))
-        run('ln -s {} {}'.format(release_folder, current_link))
-
-        print('New version deployed!')
+        run('mkdir -p {}{}/'.format(path, no_ext))
+        run('tar -xzf /tmp/{} -C {}{}/'.format(file_n, path, no_ext))
+        run('rm /tmp/{}'.format(file_n))
+        run('mv {0}{1}/web_static/* {0}{1}/'.format(path, no_ext))
+        run('rm -rf {}{}/web_static'.format(path, no_ext))
+        run('rm -rf /data/web_static/current')
+        run('ln -s {}{}/ /data/web_static/current'.format(path, no_ext))
         return True
-    except Exception as e:
-        print('Deployment failed:', e)
+    except:
         return False
