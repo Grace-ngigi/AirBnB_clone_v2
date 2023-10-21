@@ -31,8 +31,6 @@ class DBStorage:
         if getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
         
-        print("db url: {}".format(self.__engine))
-
     def all(self, cls=None):
         """Query objects from the database"""
         obj_dict = {}
@@ -54,7 +52,6 @@ class DBStorage:
 
     def save(self):
         """Commit all changes of the current database session"""
-        logging.dubug("Saving data to db: %s", self)
         self.__session.commit()
 
     def delete(self, obj=None):
@@ -92,11 +89,8 @@ class DBStorage:
 
     def new(self, obj):
         self.__session.add(obj)
-        print("calling new function.... ")
-        logging.debug("Data being saved: %s", obj)
 
     def save(self):
-        print("saving from db side... ")
         self.__session.commit()
 
 
