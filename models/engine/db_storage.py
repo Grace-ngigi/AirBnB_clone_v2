@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """This module defines the DBStorage class for database interaction"""
 from os import getenv
+import logging
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, scoped_session
 from models.base_model import Base
@@ -11,6 +12,7 @@ from models.amenity import Amenity
 from models.place import Place
 from models.review import Review
 
+logging.basicConfig(level=logging.DEBUG)
 
 class DBStorage:
     """DBStorage class for database interaction"""
@@ -28,6 +30,8 @@ class DBStorage:
                                       pool_pre_ping=True)
         if getenv('HBNB_ENV') == 'test':
             Base.metadata.drop_all(self.__engine)
+        
+        print("db url: {}".format(self.__engine))
 
     def all(self, cls=None):
         """Query objects from the database"""
@@ -50,6 +54,7 @@ class DBStorage:
 
     def save(self):
         """Commit all changes of the current database session"""
+        logging.dubug("Saving data to db: %s", self)
         self.__session.commit()
 
     def delete(self, obj=None):
@@ -62,5 +67,44 @@ class DBStorage:
         Base.metadata.create_all(self.__engine)
         session_factory = sessionmaker(bind=self.__engine,
                                        expire_on_commit=False)
-        self.__session = scoped_session(session_factory)
+        self.__session = session(session_factory)
+    def do_all(self, args):
+        from models import classes
+        from models import storage
+        """ Shows all objects, or all objects of a class"""
+        print_list = []
 
+        if args:
+            args = args.split(' ')[0]  # remove possible trailing args
+            if args not in classes:
+                print("** class doesn't exist **")
+                return
+            obj_dict = storage.all(classes[args])
+            for k, v in obj_dict.items():
+                print_list.append(str(v))
+        else:
+            obj_dict = storage.all()
+            for k, v in obj_dict.items():
+                print_list.append(str(v))
+
+        print(print_list)
+    
+
+    def new(self, obj):
+        self.__session.add(obj)
+        print("calling new function.... ")
+        logging.debug("Data being saved: %s", obj)
+
+    def save(self):
+        print("saving from db side... ")
+        self.__session.commit()
+
+
+    def delete(self, obj=None):
+        if obj:
+            self.__session.delete(obj)
+
+    def reload(self):
+        Base.metadata.create_all(self.__engine)
+        Session = scoped_session(sessionmaker(bind=self.__engine, expire_on_commit=False))
+        self.__session = Session()

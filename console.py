@@ -159,6 +159,8 @@ class HBNBCommand(cmd.Cmd):
                 params[key] = value
 
         new_instance = HBNBCommand.classes[class_name](**params)
+        storage.new(new_instance)
+        print("saving from console... ")
         storage.save()
         print(new_instance.id)
 
@@ -237,18 +239,19 @@ class HBNBCommand(cmd.Cmd):
         """ Shows all objects, or all objects of a class"""
         print_list = []
 
+        storage_type = os.getenv("HBNB_TYPE_STORAGE")
+
         if args:
             args = args.split(' ')[0]  # remove possible trailing args
             if args not in HBNBCommand.classes:
                 print("** class doesn't exist **")
                 return
-            for k, v in storage._FileStorage__objects.items():
-                if k.split('.')[0] == args:
-                    print_list.append(str(v))
+            cls = HBNBCommand.classes[args]
+            objects = storage.all(cls) if storage_type == "db" else storage.all(cls.__name__)
         else:
-            for k, v in storage._FileStorage__objects.items():
-                print_list.append(str(v))
-
+            objects = storage.all() if storage_type == "db" else storage.all(None)
+        for obj in objects.values():
+            print_list.append(str(obj))
         print(print_list)
 
     def help_all(self):
